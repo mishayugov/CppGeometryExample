@@ -28,17 +28,17 @@ static const char INPUT_PATH[255] = "D:/Programming/Files/in.txt";
 // Точка
 struct Point {
     // положение
-    sf::Vector2<int> pos;
+    sf::Vector2i pos;
     // номер множества
     int setNum;
 
     // конструктор
-    Point(const sf::Vector2<int> &pos, int setNum) : pos(pos), setNum(setNum) {
+    Point(const sf::Vector2i &pos, int setNum) : pos(pos), setNum(setNum) {
     }
 
     // получить случайную точку
     static Point randomPoint() {
-        return Point(sf::Vector2<int>(
+        return Point(sf::Vector2i(
                              rand() % WINDOW_SIZE_X,
                              rand() % WINDOW_SIZE_Y),
                      rand() % 2
@@ -119,7 +119,7 @@ void loadFromFile() {
         input >> y; // читаем y координату
         input >> s; // читаем номер множества
         // добавляем в динамический массив точку на основе прочитанных данных
-        points.emplace_back(Point(sf::Vector2<int>(x, y), s));
+        points.emplace_back(Point(sf::Vector2i(x, y), s));
     }
     // закрываем файл
     input.close();
@@ -173,7 +173,7 @@ void RenderTask() {
         }
         // добавляем в список рисования круг
         pDrawList->AddCircleFilled(
-                sf::Vector2<int>(point.pos.x, point.pos.y),
+                sf::Vector2i(point.pos.x, point.pos.y),
                 3,
                 clr,
                 20
@@ -203,7 +203,7 @@ void ShowAddElem() {
     // если нажата кнопка `Set 1`
     if (ImGui::Button("Set 1"))
         // добавляем то добавляем в список точку, принадлежащую первому множеству
-        points.emplace_back(Point(sf::Vector2<int>(lastAddPosBuf[0], lastAddPosBuf[1]), SET_1));
+        points.emplace_back(Point(sf::Vector2i(lastAddPosBuf[0], lastAddPosBuf[1]), SET_1));
     // восстанавливаем буфер id
     ImGui::PopID();
 
@@ -214,7 +214,7 @@ void ShowAddElem() {
     // если нажата кнопка `Set 2`
     if (ImGui::Button("Set 2"))
         // добавляем то добавляем в список точку, принадлежащую второму множеству
-        points.emplace_back(Point(sf::Vector2<int>(lastAddPosBuf[0], lastAddPosBuf[1]), SET_2));
+        points.emplace_back(Point(sf::Vector2i(lastAddPosBuf[0], lastAddPosBuf[1]), SET_2));
     // восстанавливаем буфер id
     ImGui::PopID();
 }
@@ -371,9 +371,9 @@ int main() {
                     lastAddPosBuf[1] = event.mouseButton.y;
                     // если левая кнопка мыши
                     if (event.mouseButton.button == sf::Mouse::Button::Left)
-                        points.emplace_back(sf::Vector2<int>(event.mouseButton.x, event.mouseButton.y), SET_1);
+                        points.emplace_back(sf::Vector2i(event.mouseButton.x, event.mouseButton.y), SET_1);
                     else
-                        points.emplace_back(sf::Vector2<int>(event.mouseButton.x, event.mouseButton.y), SET_2);
+                        points.emplace_back(sf::Vector2i(event.mouseButton.x, event.mouseButton.y), SET_2);
                 }
             }
         }

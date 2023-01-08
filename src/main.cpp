@@ -23,9 +23,9 @@ static const int WINDOW_SIZE_X = 800;
 static const int WINDOW_SIZE_Y = 800;
 
 // путь к файлу вывода
-static const char OUTPUT_PATH[255] = "D:/Programming/Files/out.txt";
+static const char OUTPUT_PATH[255] = "C:/Users/dimay/CLionProjects/out.txt";
 // путь к файлу ввода
-static const char INPUT_PATH[255] = "D:/Programming/Files/in.txt";
+static const char INPUT_PATH[255] = "C:/Users/dimay/CLionProjects/in.txt";
 
 // круг
 struct Circle {
@@ -95,11 +95,11 @@ void saveToFile() {
 
     // перебираем окружности
     for (auto circle: circles) {
-        output << circle.pos.x << " " << circle.pos.y << " " << circle.pos2.x <<" "<<circle.pos2.y <<std::endl;
+        output << 0<<" "<<circle.pos.x << " " << circle.pos.y << " " << circle.pos2.x <<" "<<circle.pos2.y <<std::endl;
     }
     // перебираем углы
     for (auto angle: angles) {
-        output << angle.pos1.x << " " << angle.pos1.y << " " << angle.pos2.x << " " << angle.pos2.y<< " "<< angle.pos3.x << " " << angle.pos3.y << std::endl;
+        output << 1<<" "<<angle.pos1.x << " " << angle.pos1.y << " " << angle.pos2.x << " " << angle.pos2.y<< " "<< angle.pos3.x << " " << angle.pos3.y << std::endl;
     }
     // закрываем
     output.close();
@@ -121,20 +121,20 @@ void loadFromFile() {
         int x, y, rad, L,x1,x2,x3,y1,y2,y3;
         input >> L;
         if (L == 0) {
-            input >> x; // читаем x координату
-            input >> y; // читаем y координату
+            input >> x; // читаем x координату центра
+            input >> y; // читаем y координату центра
             input >> x1; // читаем x координату точки на окружности
             input>>y1; // читаем y координату точки на окружности
             // добавляем в динамический массив окружность на основе прочитанных данных
             circles.emplace_back(Circle(sf::Vector2i(x, y), sf::Vector2i(x1, y1)));
         }
         if (L != 0) {
-            input >> x1; // читаем x координату
-            input >> y1; // читаем y координату
-            input >> x2; // читаем x координату
-            input >> y2; // читаем y координату
-            input >> x3; // читаем x координату
-            input >> y3; // читаем y координату
+            input >> x1;
+            input >> y1;
+            input >> x2;
+            input >> y2;
+            input >> x3;
+            input >> y3;
             // добавляем в динамический массив угол на основе прочитанных данных
             angles.emplace_back(Angle(sf::Vector2i(x1, y1), sf::Vector2i(x2, y2), sf::Vector2i(x3, y3)));
         }

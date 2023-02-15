@@ -27,6 +27,17 @@ static const char OUTPUT_PATH[255] = "C:/Users/dimay/CLionProjects/out.txt";
 // путь к файлу ввода
 static const char INPUT_PATH[255] = "C:/Users/dimay/CLionProjects/in.txt";
 
+// точка
+struct Point {
+    // положение
+    sf::Vector2i pos;
+
+    // конструктор
+    Point(const sf::Vector2i &pos) : pos(pos) {
+    }
+};
+
+
 // круг
 struct Circle {
     // положение центра
@@ -341,6 +352,33 @@ void ShowFiles() {
     // восстанавливаем буфер id
     ImGui::PopID();
 
+}
+bool tagIntersect(sf:: Vector2i x1y1, sf:: Vector2i x2y2, sf:: Vector2i a1b1, sf:: Vector2i a2b2) {
+    double x1=x1y1.x;
+    double y1=x1y1.y;
+    double x2=x2y2.x;
+    double y2=x2y2.y;
+    double x3=a1b1.x;
+    double y3=a1b1.y;
+    double x4=a2b2.x;
+    double y4=a2b2.y;
+    double x=((x1*y2-x2*y1)*(x4-x3)-(x3*y4-x4*y3)*(x2-x1))/((y1-y2)*(x4-x3)-(y3-y4)*(x2-x1));
+    double y=((y3-y4)*x-(x3*y4-x4*y3))/(x4-x3);
+    if (((x1<=x)and(x2>=x)and(x3<=x)and(x4>=x))or((y1<=y) and(y2>=y)and(y3<=y)and(y4>=y)))
+        return true;
+    else
+        return false;
+}
+//функция, определяющая, лежит ли точка внутри угла
+bool point_in_angle(Angle a, Point p){
+    sf:: Vector2i sm1,sm2,smp,sm0={0,0};
+    sm1.x=(a.pos2.x-a.pos1.x) / sqrt((a.pos2.x-a.pos1.x)*(a.pos2.x-a.pos1.x)+(a.pos2.y-a.pos1.y)*(a.pos2.y-a.pos1.y));
+    sm1.y=(a.pos2.y-a.pos1.y) / sqrt((a.pos2.x-a.pos1.x)*(a.pos2.x-a.pos1.x)+(a.pos2.y-a.pos1.y)*(a.pos2.y-a.pos1.y));
+    sm2.x=(a.pos3.x-a.pos1.x) / sqrt((a.pos3.x-a.pos1.x)*(a.pos3.x-a.pos1.x)+(a.pos3.y-a.pos1.y)*(a.pos3.y-a.pos1.y));
+    sm2.y=(a.pos3.y-a.pos1.y) / sqrt((a.pos3.x-a.pos1.x)*(a.pos3.x-a.pos1.x)+(a.pos3.y-a.pos1.y)*(a.pos3.y-a.pos1.y));
+    smp.x=(p.pos.x-a.pos1.x) / sqrt((p.pos.x-a.pos1.x)*(p.pos.x-a.pos1.x)+(p.pos.y-a.pos1.y)*(p.pos.y-a.pos1.y));
+    smp.y=(p.pos.y-a.pos1.y) / sqrt((p.pos.x-a.pos1.x)*(p.pos.x-a.pos1.x)+(p.pos.y-a.pos1.y)*(p.pos.y-a.pos1.y));
+    return tagIntersect(sm0,smp,sm1,sm2);
 }
 
 // решение задачи

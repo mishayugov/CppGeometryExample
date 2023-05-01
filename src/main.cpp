@@ -35,8 +35,24 @@ struct Point {
     // конструктор
     Point(const sf::Vector2i &pos) : pos(pos) {
     }
+    // получить случайную точку
+    static Point randomPoint() {
+        return Point(sf::Vector2i(
+                             rand() % WINDOW_SIZE_X,
+                             rand() % WINDOW_SIZE_Y)
+        );
+    }
 };
 
+// динамический список точек для Монте-Карло
+std::vector<Point> MKpoints;
+// добавить много случайных точек для Монте-Карло
+void randomize() {
+    MKpoints.clear();
+    for (long long i = 0; i < 100000; i++) {
+        MKpoints.emplace_back(Point::randomPoint());
+    }
+}
 
 // круг
 struct Circle {
@@ -86,9 +102,6 @@ int fAddPosBufL[2] = {-1, 0};
 // буфер, хранящий координаты предпредпоследней добавленной точки левой кнопкой
 int sAddPosBufL[2] = {-1, 0};
 
-// буфер кол-ва случайных точек
-int lastRandoCntBuf[1] = {10};
-
 
 // задать цвет фона по вещественному массиву компонент
 static void setColor(float *pDouble) {
@@ -116,8 +129,71 @@ void saveToFile() {
     output.close();
 }
 
+//пересекаются ли два отрезка?
+bool tagIntersect(sf:: Vector2i x1y1, sf:: Vector2i x2y2, sf:: Vector2i a1b1, sf:: Vector2i a2b2) {
+    double x1=x1y1.x;
+    double y1=x1y1.y;
+    double x2=x2y2.x;
+    double y2=x2y2.y;
+    double x3=a1b1.x;
+    double y3=a1b1.y;
+    double x4=a2b2.x;
+    double y4=a2b2.y;
+    double x=((x1*y2-x2*y1)*(x3-x4)-(x3*y4-x4*y3)*(x1-x2))/((x1-x2)*(y3-y4)-(y1-y2)*(x3-x4));
+    if (((x1<=x and x2>=x) or (x1>=x and x2<=x)) and ((x3<=x and x4>=x) or (x3>=x and x4<=x)))
+        return true;
+    else
+        return false;
+}
+//функция, определяющая, лежит ли точка внутри угла
+bool point_in_angle(Angle a, Point p){
+    sf:: Vector2i sm1,sm2,smp,sm0={0,0};
+    sm1.x=(a.pos2.x-a.pos1.x);
+    sm1.y=(a.pos2.y-a.pos1.y) ;
+    sm2.x=(a.pos3.x-a.pos1.x);
+    sm2.y=(a.pos3.y-a.pos1.y);
+    smp.x=(p.pos.x-a.pos1.x) *100;
+    smp.y=(p.pos.y-a.pos1.y) *100;
+    return tagIntersect(sm0,smp,sm1,sm2);
+}
+//лежит ли точка внутри круга
+bool point_in_circle(Circle a, Point p){
+    double rad=(a.pos.x-a.pos2.x)*(a.pos.x-a.pos2.x)+(a.pos.y-a.pos2.y)*(a.pos.y-a.pos2.y);
+    if (rad>=(a.pos.x-p.pos.x)*(a.pos.x-p.pos.x)+(a.pos.y-p.pos.y)*(a.pos.y-p.pos.y)){
+        return true;
+    } else {
+        return false;
+    }
+}
+
+//здесь лежат индексы в массиве окружности и угла, которые нужно рисовать
+long long ind_c,ind_a,nado_li=0;
+
 // решение задачи
 void solve() {
+    //генерирую много случайных точек
+    randomize();
+    //перебираю для каждой пары окружности и угла сколько внутри точек, ищу максимум
+    long long maxkol=0;
+    ind_c=0;
+    ind_a=0;
+    for (long int i1=0;i1<circles.size();i1++) {
+        for (long int i2 = 0; i2 < angles.size(); i2++) {
+            long long kol = 0;
+            for (long int i3 = 0; i3 < MKpoints.size(); i3++) {
+                if (point_in_angle(angles[i2], MKpoints[i3]) and point_in_circle(circles[i1], MKpoints[i3]))
+                    kol++;
+            }
+            if (kol > maxkol) {
+                maxkol = kol;
+                ind_c = i1;
+                ind_a = i2;
+            }
+        }
+    }
+    nado_li=1;
+    if (maxkol==0)
+        nado_li=0;
 }
 
 // загрузка из файла
@@ -208,9 +284,14 @@ void RenderTask() {
     auto pDrawList = ImGui::GetWindowDrawList();
 
     // перебираем окружности из динамического массива окружностей
+    long long ind=-1;
     for (auto circle: circles) {
+        ind++;
         ImColor clr;
-        clr = ImColor(200, 100, 150);
+        if (ind==ind_c and nado_li)
+            clr = ImColor(1, 150, 1);
+        else
+            clr = ImColor(200, 100, 150);
 
         // добавляем в список рисования круг
         pDrawList->AddCircle(
@@ -220,10 +301,15 @@ void RenderTask() {
                 100
         );
     }
-    // перебираем углы из динамического массива углоы
+    // перебираем углы из динамического массива углов
+    ind=-1;
     for (auto angle: angles) {
+        ind++;
         ImColor clr;
-        clr = ImColor(10, 100, 150);
+        if (ind==ind_a and nado_li)
+            clr = ImColor(1, 150, 1);
+        else
+            clr = ImColor(10, 100, 150);
 
         // рисуем угол
         // вершина угла
@@ -353,33 +439,6 @@ void ShowFiles() {
     ImGui::PopID();
 
 }
-bool tagIntersect(sf:: Vector2i x1y1, sf:: Vector2i x2y2, sf:: Vector2i a1b1, sf:: Vector2i a2b2) {
-    double x1=x1y1.x;
-    double y1=x1y1.y;
-    double x2=x2y2.x;
-    double y2=x2y2.y;
-    double x3=a1b1.x;
-    double y3=a1b1.y;
-    double x4=a2b2.x;
-    double y4=a2b2.y;
-    double x=((x1*y2-x2*y1)*(x4-x3)-(x3*y4-x4*y3)*(x2-x1))/((y1-y2)*(x4-x3)-(y3-y4)*(x2-x1));
-    double y=((y3-y4)*x-(x3*y4-x4*y3))/(x4-x3);
-    if (((x1<=x)and(x2>=x)and(x3<=x)and(x4>=x))or((y1<=y) and(y2>=y)and(y3<=y)and(y4>=y)))
-        return true;
-    else
-        return false;
-}
-//функция, определяющая, лежит ли точка внутри угла
-bool point_in_angle(Angle a, Point p){
-    sf:: Vector2i sm1,sm2,smp,sm0={0,0};
-    sm1.x=(a.pos2.x-a.pos1.x) / sqrt((a.pos2.x-a.pos1.x)*(a.pos2.x-a.pos1.x)+(a.pos2.y-a.pos1.y)*(a.pos2.y-a.pos1.y));
-    sm1.y=(a.pos2.y-a.pos1.y) / sqrt((a.pos2.x-a.pos1.x)*(a.pos2.x-a.pos1.x)+(a.pos2.y-a.pos1.y)*(a.pos2.y-a.pos1.y));
-    sm2.x=(a.pos3.x-a.pos1.x) / sqrt((a.pos3.x-a.pos1.x)*(a.pos3.x-a.pos1.x)+(a.pos3.y-a.pos1.y)*(a.pos3.y-a.pos1.y));
-    sm2.y=(a.pos3.y-a.pos1.y) / sqrt((a.pos3.x-a.pos1.x)*(a.pos3.x-a.pos1.x)+(a.pos3.y-a.pos1.y)*(a.pos3.y-a.pos1.y));
-    smp.x=(p.pos.x-a.pos1.x) / sqrt((p.pos.x-a.pos1.x)*(p.pos.x-a.pos1.x)+(p.pos.y-a.pos1.y)*(p.pos.y-a.pos1.y));
-    smp.y=(p.pos.y-a.pos1.y) / sqrt((p.pos.x-a.pos1.x)*(p.pos.x-a.pos1.x)+(p.pos.y-a.pos1.y)*(p.pos.y-a.pos1.y));
-    return tagIntersect(sm0,smp,sm1,sm2);
-}
 
 // решение задачи
 void ShowSolve() {
@@ -406,6 +465,9 @@ void ShowSolve() {
         // удаляем всё
         circles.clear();
         angles.clear();
+        nado_li=0;
+        ind_c=-1;
+        ind_a=-1;
     }
     // восстанавливаем буфер id
     ImGui::PopID();

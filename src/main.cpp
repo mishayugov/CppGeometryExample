@@ -177,7 +177,7 @@ std::vector<Point> P_circuit;
 
 //делаю множество точек на единичной окружности
 std::vector<std::pair<double, double>> Set;
-void making_a_set(){
+void making_a_set(Angle A,Circle C,double rad_C){
     Set.clear();
     double cos1=cos(2*pi/1000),sin1=sin(2*pi/1000);
     std::pair<double,double> pp;
@@ -187,6 +187,8 @@ void making_a_set(){
     for (long int i=0;i<999;i++){
         cos1=cos(2*pi/1000*(i+1));
         sin1=sin(2*pi/1000*(i+1));
+        if (abs(cos1*rad_C-(A.pos1.x-C.pos.x))<1)
+            continue;
         pp.first=cos1;
         pp.second=sin1;
         Set.emplace_back(pp);
@@ -197,7 +199,7 @@ void circuit(){
     Circle C = circles[ind_c];
     double rad_C = sqrt(pow(C.pos.x-C.pos2.x,2)+pow(C.pos.y-C.pos2.y,2));
     Angle A = angles[ind_a];
-    making_a_set();
+    making_a_set(A,C,rad_C);
     std::vector<std::pair<double, double>> Set2;
     std::pair<double,double> u1;
     bool b=false;

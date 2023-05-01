@@ -27,6 +27,8 @@ static const char OUTPUT_PATH[255] = "C:/Users/dimay/CLionProjects/out.txt";
 // путь к файлу ввода
 static const char INPUT_PATH[255] = "C:/Users/dimay/CLionProjects/in.txt";
 
+double pi=3.14159265;
+
 // точка
 struct Point {
     // положение
@@ -169,6 +171,72 @@ bool point_in_circle(Circle a, Point p){
 //здесь лежат индексы в массиве окружности и угла, которые нужно рисовать
 long long ind_c,ind_a,nado_li=0;
 
+//множество точек, по которым надо построить контур пересечения и его построение
+//самая интеллектуальная часть программы, на мой взгляд
+std::vector<Point> P_circuit;
+
+//делаю множество точек на единичной окружности
+std::vector<std::pair<double, double>> Set;
+void making_a_set(){
+    Set.clear();
+    double cos1=cos(2*pi/1000),sin1=sin(2*pi/1000);
+    std::pair<double,double> pp;
+    pp.first=cos1;
+    pp.second=sin1;
+    Set.push_back(pp);
+    for (long int i=0;i<999;i++){
+        cos1=cos(2*pi/1000*(i+1));
+        sin1=sin(2*pi/1000*(i+1));
+        pp.first=cos1;
+        pp.second=sin1;
+        Set.emplace_back(pp);
+    }
+}
+void circuit(){
+    P_circuit.clear();
+    Circle C = circles[ind_c];
+    double rad_C = sqrt(pow(C.pos.x-C.pos2.x,2)+pow(C.pos.y-C.pos2.y,2));
+    Angle A = angles[ind_a];
+    making_a_set();
+    std::vector<std::pair<double, double>> Set2;
+    std::pair<double,double> u1;
+    bool b=false;
+    if (point_in_circle(C,A.pos1)){
+        u1.first=A.pos1.x;
+        u1.second=A.pos1.y;
+        b=true;
+    }
+    for (long int i=0;i<Set.size();i++){
+        std::pair<double,double> u;
+        u=Set[i];
+        u.first*=rad_C;
+        u.second*=rad_C;
+        u.first+=C.pos.x;
+        u.second+=C.pos.y;
+        Set2.push_back(u);
+    }
+    std::vector<std::pair<double, double>> Set3;
+    for (long int i=0;i<Set2.size();i++){
+        Point pp=MKpoints[0],pp1=MKpoints[0];
+        pp.pos.x=Set2[i].first;
+        pp.pos.y=Set2[i].second;
+        pp1.pos.x=Set2[(i+1)%Set2.size()].first;
+        pp1.pos.y=Set2[(i+1)%Set2.size()].second;
+        if (point_in_angle(A,pp)){
+            Set3.push_back(Set2[i]);
+            if (not point_in_angle(A,pp1) and b){
+                Set3.push_back(u1);
+            }
+        }
+    }
+    for (long int i=0;i<Set3.size();i++){
+        Point pp=MKpoints[0];
+        pp.pos.x=Set3[i].first;
+        pp.pos.y=Set3[i].second;
+        P_circuit.emplace_back(pp);
+    }
+}
+
 // решение задачи
 void solve() {
     //генерирую много случайных точек
@@ -194,6 +262,8 @@ void solve() {
     nado_li=1;
     if (maxkol==0)
         nado_li=0;
+    else
+        circuit();
 }
 
 // загрузка из файла
@@ -367,6 +437,20 @@ void RenderTask() {
                 3,
                 clr
         );
+    }
+
+    if (nado_li){
+        for (long int i=0;i<P_circuit.size();i++){
+            ImColor clr;
+            clr = ImColor(255, 255, 1);
+            // рисуем линию
+            pDrawList->AddLine(
+                    P_circuit[i].pos,
+                    P_circuit[(i+1)%P_circuit.size()].pos,
+                    clr,
+                    1.0f
+            );
+        }
     }
     // заканчиваем рисование окна
     ImGui::End();

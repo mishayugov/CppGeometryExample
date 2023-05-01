@@ -66,6 +66,11 @@ struct Circle {
     // конструктор
     Circle(const sf::Vector2i &pos, const sf::Vector2i &pos2) : pos(pos), pos2(pos2) {
     }
+
+    //случайная окружность
+    static Circle randomCircle() {
+        return Circle (sf::Vector2i(rand()%WINDOW_SIZE_X,rand()%WINDOW_SIZE_Y),sf::Vector2i(rand()%WINDOW_SIZE_X,rand()%WINDOW_SIZE_Y));
+    }
 };
 
 // динамический список кругов
@@ -81,6 +86,11 @@ struct Angle {
 
     // конструктор
     Angle(const sf::Vector2i &pos1, const sf::Vector2i &pos2,const sf::Vector2i &pos3) : pos1(pos1), pos2(pos2),pos3(pos3) {
+    }
+
+    //случайный угол
+    static Angle randomAngle() {
+        return Angle (sf::Vector2i(rand()%WINDOW_SIZE_X,rand()%WINDOW_SIZE_Y),sf::Vector2i(rand()%WINDOW_SIZE_X,rand()%WINDOW_SIZE_Y),sf::Vector2i(rand()%WINDOW_SIZE_X,rand()%WINDOW_SIZE_Y));
     }
 };
 
@@ -458,6 +468,34 @@ void RenderTask() {
     ImGui::End();
 }
 
+//случайные объекты
+void ShowRandomObjects(){
+    // если не раскрыта панель `Add Elem`
+    if (!ImGui::CollapsingHeader("Random Objects"))
+        // заканчиваем выполнение
+        return;
+    // фиксируем id равный 0 для первого элемента
+    ImGui::PushID(0);
+    // если нажата кнопка `Circle`
+    if (ImGui::Button("Circle")) {
+        // добавляем в список 1 окружность
+        circles.emplace_back(Circle::randomCircle());
+    }
+    // восстанавливаем буфер id
+    ImGui::PopID();
+
+    // говорим imGui, что следующий элемент нужно рисовать на той же линии
+    ImGui::SameLine();
+    // задаём id, равный одному
+    ImGui::PushID(1);
+    // если нажата кнопка `Angle`
+    if (ImGui::Button("Angle")) {
+        // добавляем в список угол
+        angles.emplace_back(Angle::randomAngle());
+    }
+    // восстанавливаем буфер id
+    ImGui::PopID();
+}
 // ручное добавление элементов
 void ShowAddElem() {
     // если не раскрыта панель `Add Elem`
@@ -467,8 +505,8 @@ void ShowAddElem() {
 
     // фиксируем id равный 0 для первого элемента
     ImGui::PushID(0);
-    // если нажата кнопка `Set 1`
-    if (ImGui::Button("Set 1") and sAddPosBufL[0]!=-1) {
+    // если нажата кнопка `Circle`
+    if (ImGui::Button("Circle")) {
         // добавляем в список окружность
         circles.emplace_back(Circle(sf::Vector2i(fAddPosBufL[0], fAddPosBufL[1]), sf::Vector2i(sAddPosBufL[0], sAddPosBufL[1])));
         fAddPosBufL[0]=-1;
@@ -481,8 +519,8 @@ void ShowAddElem() {
     ImGui::SameLine();
     // задаём id, равный одному
     ImGui::PushID(1);
-    // если нажата кнопка `Set 2`
-    if (ImGui::Button("Set 2"),tAddPosBufR[0]!=-1) {
+    // если нажата кнопка `Angle`
+    if (ImGui::Button("Angle")) {
         // добавляем в список угол
         angles.emplace_back(Angle(sf::Vector2i(fAddPosBufR[0], fAddPosBufR[1]), sf::Vector2i(sAddPosBufR[0], sAddPosBufR[1]),sf::Vector2i(tAddPosBufR[0], tAddPosBufR[1])));
         tAddPosBufR[0]=-1;
@@ -674,7 +712,7 @@ int main() {
         // ручное добавление элементов
         ShowAddElem();
         // добавление случайных точек
-
+        ShowRandomObjects();
         // работа с файлами
         ShowFiles();
         // решение задачи
